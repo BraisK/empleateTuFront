@@ -6,6 +6,8 @@ import Register from './pages/Register'
 import Profile from './pages/Profile'
 import UserList from './pages/UserList'
 import Navbar from './components/Navbar'
+import Offerts from './pages/Offerts'
+import Categories from './pages/Category'
 
 function App() {
 
@@ -20,6 +22,9 @@ function App() {
           <Route path='/register' element={<Register/>}/>
           <Route path='/profile' element={<Profile/>}/>
           <Route path='/userList' element={<UserList/>}/>
+          <Route path='/userList' element={<UserList/>}/>
+          <Route path='/offerts' element={<Offerts/>}/>
+          <Route path='/categories' element={<Categories/>}/>
         </Routes>
         </div>
       </BrowserRouter>
