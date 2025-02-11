@@ -19,7 +19,7 @@ export const getUsers = async () => {
 }
 export const registerUser = async (name:string ,email: string, password: string) => {
     try {
-        const response = await fetch(API_URL_BASE + 'auth/register',
+        const response = await fetch(API_URL_BASE + '/auth/register',
             {
                 method: 'POST',
                 headers: {
