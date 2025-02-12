@@ -7,11 +7,23 @@ export class OfferService {
         let url = API_URL_BASE+'/offers?'
         if(title) url += 'title='+title
 
-        return await fetchAPI(url)
+        return await fetchAPI(url,{
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include'
+        })
     }
 
     static async getById(id:number) {
-        return await fetchAPI(API_URL_BASE+'/offers/'+id)
+        return await fetchAPI(API_URL_BASE+'/offers/'+id,{
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include'
+        })
     }
 
     static async create(offer: Partial<Offer>) {
