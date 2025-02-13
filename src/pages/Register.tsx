@@ -1,59 +1,109 @@
-import { ChangeEvent, FormEvent, useState } from 'react'
-import { registerUser } from '../services/userServices'
+import React, { ChangeEvent, FormEvent, useState } from "react";
+import { AuthService } from "../services/authServices";
+import User from "../models/User";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import ErrorMsgData from "../utils/ErrorMsgData";
+import InputForm from "../components/InputForm";
 
-function Register() {
-
-  const [form, setForm] = useState(
-    {
-      name: '',
-      email: '',
-      password: ''
-    }
-  )
-
-  const [message, setMessage] = useState('')
+const Register: React.FC = () => {
+  const [form, setForm] = useState<Partial<User>>({
+    name: "",
+    surname: "",
+    email: "",
+    password: "",
+    course: "",
+    accepNotifications: false,
+  });
+  const [errors, setErrors] = useState<Record<string, string | undefined>>({});
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    // mensaje por el post al api del backend
     try {
-      await registerUser(form.name, form.email, form.password)
-      console.log('Register successfull')
-      setMessage('Register successfull')
-      // redirigir a otra pagina (ofertas)
+      setLoading(true);
+      setErrors({});
+
+      e.preventDefault();
+
+      await AuthService.registerUser(form);
+
+      toast.success("Usuario registrado con éxito!");
+      navigate("/offers");
     } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Error desconocido'
-      setMessage(msg)
+      toast.error("Error al registrar el usuario.");
+
+      if (Array.isArray(error)) {
+        const errorObj: Record<string, string> = error?.reduce((acc: Record<string, string>, err: unknown) => {
+          const errorDetail = err as ErrorMsgData;
+          acc[errorDetail.path] = errorDetail.msg;
+          return acc;
+        }, {});
+        setErrors(errorObj);
+      } else if (error instanceof Error) {
+        const msg = error instanceof Error ? error.message : "Error desconocido"
+        setErrors({ message: msg || 'Error desconocido' });
+      } else {
+        setErrors({ message: error as string || 'Error desconocido' });
+      }
+
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { value, name } = e.target
-    setForm({ ...form, [name]: value, })
 
-  }
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { value, name } = e.target;
+    //if(name==='idCategory') valueNew = Number(value)
+    setForm({ ...form, [name]: value });
+  };
+
+  const handleChangeCheckbox = (e: ChangeEvent<HTMLInputElement>) => {
+    const { checked, name } = e.target;
+    setForm({ ...form, [name]: checked });
+  };
+
+  if (loading) return <p>Loading...</p>;
+
   return (
+    <form className="max-w-sm mx-auto min-w-sm" onSubmit={handleSubmit}>
+      <InputForm text="Nombre" name="name" value={form.name || ''} handleChange={handleChange} error={errors.name} />
+      <InputForm text="Apellidos" name="surname" value={form.surname || ''} handleChange={handleChange} error={errors.surname} />
+      <InputForm text="Email" name="email" value={form.email || ''} handleChange={handleChange} error={errors.email} />
+      <InputForm text="Password" name="password" value={form.password || ''} handleChange={handleChange} error={errors.password} />
 
+      <div className="flex items-start mb-5">
+        <div className="flex items-center h-5">
+          <input
+            id="acceptNotifications"
+            name="accepNotifications"
+            type="checkbox"
+            value={form.accepNotifications ? "on" : "off"}
+            onChange={handleChangeCheckbox}
+            className="w-4 h-4 border border-gray-300 rounded-sm bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800"
+          />
+        </div>
 
-    <form className="max-w-md mx-auto" onSubmit={handleSubmit}>
-      <div className="relative z-0 w-full mb-5 group">
-        <label htmlFor="floating_first_name" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">First name</label>
-        <input type="text" name='name' value={form.name} onChange={handleChange} id="name" className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+        <label
+          htmlFor="remember"
+          className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+        >
+          Aceptas recibir notificaciones?
+        </label>
+        {errors.accepNotifications && <p className="mt-2 text-sm text-red-600 dark:text-red-500"> {errors.accepNotifications}</p>}
+
       </div>
-      <div className="relative z-0 w-full mb-5 group">
-        <label htmlFor="floating_email" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Email address</label>
-        <input type="email" name='email' value={form.email} onChange={handleChange} id='email' className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
-      </div>
-      <div className="relative z-0 w-full mb-5 group">
-        <label htmlFor="floating_password" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Password</label>
-        <input type="password" name='password' value={form.password} onChange={handleChange} id='password' className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
-      </div>
-      
-      <button type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
-      {message}
+      {errors && errors.message && <p className="text-center mt-4 text-red-500">{errors.message}</p>}
+      <button
+        type="submit"
+        className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+      >
+        Submit
+      </button>
     </form>
+  );
+};
 
-
-  )
-}
-
-export default Register
+export default Register;
