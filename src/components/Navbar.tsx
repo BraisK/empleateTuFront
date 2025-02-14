@@ -52,9 +52,11 @@ function Navbar() {
                             </li>
                         }
                         {isAuthenticated && <button onClick={logout}>Logout</button>}
-                        <span className='text-white'>
-                            {user?.email} {user?.role === 'Admin' ? 'Eres Admin' : 'Eres user'}
-                        </span>
+                        {isAuthenticated &&
+                            <span className='text-white'>
+                                {user?.email} {user?.role === 'Admin' ? 'Eres Admin' : 'Eres user'}
+                            </span>
+                        }
                     </ul>
                 </div>
             </div>
