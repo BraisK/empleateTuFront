@@ -3,6 +3,7 @@ export const fetchAPI = async (endPoint: string, options = {}) => {
         const response = await fetch(endPoint, options);
 
         if (response.status == 401) {
+            console.log('Ha saltado el /login')
             window.location.href = "/login";
             throw new Error("Sesión expirada. Inicia sesión nuevamente");
         }

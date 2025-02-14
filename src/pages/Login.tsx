@@ -1,5 +1,5 @@
 import { ChangeEvent, FormEvent, useState } from 'react'
-import { AuthService } from '../services/authServices'
+import { useAuth } from '../contexts/AuthContext'
 
 function Login() {
 
@@ -10,12 +10,13 @@ function Login() {
     }
   )
   const [message, setMessage] = useState('')
-
+  const {login} = useAuth()
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     // mensaje por post al api del backend
     try {
-      await AuthService.loginUser(form.email, form.password)
+      // await AuthService.loginUser(form.email, form.password) // backend
+      await login(form.email, form.password) // llamda al contexto
       console.log('login successfull')
       setMessage('login successfull')
       // Redirigir a otra pagina (ofertas)
